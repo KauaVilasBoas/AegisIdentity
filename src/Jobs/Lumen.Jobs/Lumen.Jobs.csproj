@@ -3,6 +3,9 @@
   <PropertyGroup>
     <RootNamespace>Lumen.Jobs</RootNamespace>
     <AssemblyName>Lumen.Jobs</AssemblyName>
+    <!-- Internal to the Lumen app: never shipped as a package. Guards against the SDK's
+         IsPackable default, which is how Lumen.SharedKernel leaked into a published nuspec. -->
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

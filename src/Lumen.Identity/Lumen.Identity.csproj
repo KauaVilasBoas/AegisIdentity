@@ -31,7 +31,13 @@
   <ItemGroup>
     <ProjectReference Include="..\Lumen.Authorization\Lumen.Authorization.csproj" />
     <ProjectReference Include="..\Lumen.Authorization.Contracts\Lumen.Authorization.Contracts.csproj" />
-    <ProjectReference Include="..\SharedKernel\Lumen.SharedKernel\Lumen.SharedKernel.csproj" />
+    <!--
+      PrivateAssets=all: Lumen.SharedKernel is not published, so it must not become a
+      <dependency> in the nuspec. The assembly is still needed at runtime — Domain,
+      Application and the public surface all depend on it — so it ships embedded in the
+      package's lib/ instead; see IncludeSharedKernelInPackage below.
+    -->
+    <ProjectReference Include="..\SharedKernel\Lumen.SharedKernel\Lumen.SharedKernel.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\BuildingBlocks\Lumen.Modularity\Lumen.Modularity.csproj" />
   </ItemGroup>
 
@@ -63,5 +69,27 @@
     <InternalsVisibleTo Include="Lumen.Identity.Tests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
+
+  <!--
+    Copies Lumen.SharedKernel.dll into lib/net8.0/ alongside Lumen.Identity.dll. Without
+    this, the PrivateAssets above would leave the package without the assembly and the
+    consumer would fail with FileNotFoundException on the first call. Sitting in lib/ also
+    makes NuGet expose it as a compile-time reference, so consumers that catch
+    NotFoundException keep compiling.
+
+    Filtered by Filename because ReferenceCopyLocalPaths carries the whole dependency
+    closure, and by Extension so the .pdb is not dragged along.
+  -->
+  <PropertyGroup>
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeSharedKernelInPackage</TargetsForTfmSpecificBuildOutput>
+  </PropertyGroup>
+
+  <Target Name="IncludeSharedKernelInPackage" DependsOnTargets="ResolveReferences">
+    <ItemGroup>
+      <BuildOutputInPackage
+        Include="@(ReferenceCopyLocalPaths)"
+        Condition="'%(Filename)' == 'Lumen.SharedKernel' AND '%(Extension)' == '.dll'" />
+    </ItemGroup>
+  </Target>
 
 </Project>

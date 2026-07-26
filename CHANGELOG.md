@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [Identity 1.0.1] - 2026-07-26
+
+### Fixed
+
+- **`Lumen.Identity` não depende mais do pacote inexistente `Lumen.SharedKernel`.** O `Lumen.SharedKernel.csproj` não declarava `IsPackable`, e como o SDK do .NET assume `true` por padrão, o `dotnet pack` do `Lumen.Identity` convertia o `ProjectReference` numa `<dependency id="Lumen.SharedKernel" version="1.0.0" />` no nuspec. Esse pacote nunca foi publicado — é código interno — então **todo restore do `Lumen.Identity` 1.0.0 a partir do nuget.org falhava com `NU1101`**. Só passava em máquinas com uma fonte NuGet local contendo o `.nupkg`.
+
+  O `Lumen.SharedKernel` agora é `IsPackable=false` e o `ProjectReference` usa `PrivateAssets="all"`. Como os tipos continuam necessários em runtime (o `Domain` herda de `SharedKernel.Persistence`, e `NotFoundException`/`BusinessException` fazem parte da superfície pública), o `Lumen.SharedKernel.dll` vai **embutido em `lib/net8.0/`** do próprio pacote. Consumidores que já faziam `using Lumen.SharedKernel.Exceptions;` seguem compilando sem alteração.
+
+  Nenhuma mudança de API: quem conseguia restaurar o 1.0.0 (via feed local) pode atualizar para o 1.0.1 sem tocar em código.
+
+- **`IsPackable=false` explícito nos projetos internos.** `Lumen.DataAccess`, `Lumen.Integration`, `Lumen.Jobs`, `Lumen.Infrastructure`, `Lumen.Modules.Audit`, `Lumen.Modules.Identity` e `Lumen.Backoffice` (este último uma aplicação `Sdk.Web`) eram empacotáveis pelo mesmo default do SDK, apesar de nenhum declarar `PackageId`, `Version` ou `IsPackable=true` e de nenhum workflow publicá-los. Fecha a mesma armadilha que originou o bug acima e reafirma a convenção do `Directory.Build.props`: empacotar é opt-in explícito.
+
 ## [Authorization 3.0.0] - 2026-07-14
 
 > **Lumen.Authorization como biblioteca genérica de autorização.** Remove toda a máquina automática de catálogo (discovery, sync, reconciliação, validação). O consumidor é totalmente responsável pelo catálogo de permissões via suas próprias migrations. Ver ADR-0007 e SPEC-0001 para o contexto completo.
