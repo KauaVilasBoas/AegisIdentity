@@ -1,3 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <!--
+    Internal project: never shipped as a package of its own. The SDK defaults
+    IsPackable to true, and that is what made `dotnet pack` on Lumen.Identity emit a
+    <dependency id="Lumen.SharedKernel"> into its nuspec — pointing at a package that
+    does not exist on nuget.org, breaking restore for every consumer.
+
+    Packages that need these types embed the assembly instead; see the
+    IncludeSharedKernelInPackage target in Lumen.Identity.csproj.
+  -->
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
 </Project>

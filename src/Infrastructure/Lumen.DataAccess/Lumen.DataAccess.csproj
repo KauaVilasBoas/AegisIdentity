@@ -1,5 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- Internal to the Lumen app: never shipped as a package. Guards against the SDK's
+       IsPackable default, which is how Lumen.SharedKernel leaked into a published nuspec. -->
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\Lumen.Infrastructure\Lumen.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Lumen.Domain\Lumen.Domain.csproj" />

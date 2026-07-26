@@ -4,6 +4,9 @@
     <RootNamespace>Lumen.Backoffice</RootNamespace>
     <AssemblyName>Lumen.Backoffice</AssemblyName>
     <UserSecretsId>85b3077f-d7a9-4beb-8cf6-cd486aea60e3</UserSecretsId>
+    <!-- Web application, not a library: never shipped as a package. Guards against the SDK's
+         IsPackable default, which is how Lumen.SharedKernel leaked into a published nuspec. -->
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
