@@ -1,7 +1,7 @@
 <h1 align="center">Lumen</h1>
 
 <p align="center">
-  <i>Plug-in <b>authorization & identity libraries</b> for ASP.NET Core (.NET 8) — permission-based access control with a mountable admin backoffice, a consumer-owned permission catalog, and SQL Server / PostgreSQL support.</i>
+  <i>Plug-in <b>authorization & identity libraries</b> for ASP.NET Core (.NET 8): permission-based access control with a mountable admin backoffice, a consumer-owned permission catalog, and SQL Server / PostgreSQL support.</i>
 </p>
 
 <p align="center">
@@ -28,28 +28,27 @@
 
 Most ASP.NET Core apps end up hand-rolling the same thing: a `Permissions` table, a join to
 roles, an `[Authorize]` policy per endpoint, and a half-finished admin screen to manage it all.
-**Lumen packages that as a library** — decorate an action with `[RequirePermission]`, mount an
+**Lumen packages that as a library:** decorate an action with `[RequirePermission]`, mount an
 admin console at `/lumen`, and keep full ownership of your permission catalog.
 
 Two package families, published on [NuGet](https://www.nuget.org/profiles/kauavilasboas):
 
-- **`Lumen.Authorization`** *(flagship)* — permission-based authorization: profiles (roles),
-  permissions, groups, user↔profile assignments, enforcement, caching, and a mountable
-  backoffice UI.
-- **`Lumen.Identity`** *(companion)* — authentication: registration, login, JWT +
-  refresh-token rotation, email confirmation, password reset — pre-wired to plug into
+- **`Lumen.Authorization`** *(flagship)*: permission-based authorization (profiles, permissions,
+  groups, user↔profile assignments, enforcement, caching, and a mountable backoffice UI).
+- **`Lumen.Identity`** *(companion)*: authentication (registration, login, JWT +
+  refresh-token rotation, email confirmation, password reset), pre-wired to plug into
   Authorization.
 
 ### Four inviolable principles (v3.0)
 
 The library is **generic by contract** ([ADR-0007](docs/adr/0007-authz-3.0-generic-library.md), [SPEC-0001](docs/spec/0001-lumen-authorization-3.0-generic.md)):
 
-1. **Zero auto-population** — tables start empty; the library creates the schema, nothing else.
-2. **Zero global enforcement** — it only blocks where you place `[RequirePermission]`.
-3. **Zero identity coupling** — no `Users` table; `userId` is an opaque `Guid` read from a configurable claim.
-4. **Zero consumer-specific code** — the library knows nothing about your application.
+1. **Zero auto-population:** tables start empty; the library creates the schema, nothing else.
+2. **Zero global enforcement:** it only blocks where you place `[RequirePermission]`.
+3. **Zero identity coupling:** no `Users` table; `userId` is an opaque `Guid` read from a configurable claim.
+4. **Zero consumer-specific code:** the library knows nothing about your application.
 
-Battle-tested as the AuthN/AuthZ backbone of a multi-tenant laboratory management system —
+Battle-tested as the AuthN/AuthZ backbone of a multi-tenant laboratory management system,
 which drove [tenant-scoped permissions (ADR-0006)](docs/adr/0006-authz-tenant-scoped-permissions.md)
 and the [PostgreSQL provider (ADR-0005)](docs/adr/0005-multi-provider-database-support.md).
 
@@ -62,7 +61,7 @@ dotnet add package Lumen.Authorization.AspNetCore   # core + enforcement + migra
 dotnet add package Lumen.Authorization.Backoffice   # optional: mountable admin UI
 ```
 
-**1. Wire it up** — one call registers the core, `[RequirePermission]` enforcement, and the
+**1. Wire it up:** one call registers the core, `[RequirePermission]` enforcement, and the
 hosted service that creates/updates the `Lumen` schema on boot:
 
 ```csharp
@@ -80,7 +79,7 @@ app.UseAuthorization();
 app.MapLumenBackoffice("/lumen");
 ```
 
-**2. Protect endpoints** — nothing is blocked unless you say so:
+**2. Protect endpoints:** nothing is blocked unless you say so:
 
 ```csharp
 [RequirePermission]                      // convention: code = "Controller.Action"
@@ -90,7 +89,7 @@ public IActionResult Index() { ... }
 public IActionResult Delete(Guid id) { ... }
 ```
 
-**3. Seed your catalog** — permissions are *yours*, versioned in your own EF migration via the
+**3. Seed your catalog:** permissions are *yours*, versioned in your own EF migration via the
 provided helpers (the library never seeds anything):
 
 ```csharp
@@ -108,15 +107,15 @@ public partial class SeedPermissions : Migration
 }
 ```
 
-That's it — a missing permission means a `403`, never a boot failure.
+That's it: a missing permission means a `403`, never a boot failure.
 
 ---
 
 ## Backoffice
 
 The optional `Lumen.Authorization.Backoffice` package is a Razor Class Library that mounts a
-full admin console inside **your** app at any prefix — profiles, permission catalog, groups
-and user↔profile assignments — gated by its own `LumenBackofficePermissions.*` codes.
+full admin console inside **your** app at any prefix (profiles, permission catalog, groups
+and user↔profile assignments), gated by its own `LumenBackofficePermissions.*` codes.
 
 ![Permission assignment matrix](docs/screenshots/backoffice-profile-permissions.png)
 
@@ -132,7 +131,7 @@ and user↔profile assignments — gated by its own `LumenBackofficePermissions.
 |---|---|
 | [`Lumen.Authorization`](https://www.nuget.org/packages/Lumen.Authorization) | Core: domain, CQRS handlers, EF Core persistence (SQL Server + PostgreSQL) |
 | [`Lumen.Authorization.AspNetCore`](https://www.nuget.org/packages/Lumen.Authorization.AspNetCore) | `[RequirePermission]`, dynamic policy provider, umbrella `AddLumenAuthorization()` |
-| [`Lumen.Authorization.Backoffice`](https://www.nuget.org/packages/Lumen.Authorization.Backoffice) | Mountable admin UI (Razor Class Library) — `MapLumenBackoffice("/lumen")` |
+| [`Lumen.Authorization.Backoffice`](https://www.nuget.org/packages/Lumen.Authorization.Backoffice) | Mountable admin UI (Razor Class Library), mounted via `MapLumenBackoffice("/lumen")` |
 | [`Lumen.Authorization.Contracts`](https://www.nuget.org/packages/Lumen.Authorization.Contracts) | Public interfaces (`IUserPermissionService`, `IUserIdAccessor`) and events |
 | [`Lumen.Authorization.Migrations`](https://www.nuget.org/packages/Lumen.Authorization.Migrations) | SQL Server migrations + `SeedLumenPermission*` helpers |
 | [`Lumen.Authorization.Migrations.PostgreSQL`](https://www.nuget.org/packages/Lumen.Authorization.Migrations.PostgreSQL) | PostgreSQL migrations (snake_case) + seed helpers |
@@ -176,7 +175,7 @@ the identity provider and every enforcement point.
 
 ## Lumen.Identity (companion)
 
-Drop-in authentication for hosts that don't have an identity provider yet — built on the same
+Drop-in authentication for hosts that don't have an identity provider yet, built on the same
 principles and pre-integrated with Authorization:
 
 ```csharp
@@ -201,11 +200,11 @@ Full history in [ADRs](docs/adr/) and [SPEC-0001](docs/spec/0001-lumen-authoriza
 | Decision | Rationale |
 |---|---|
 | **Library, not framework** ([ADR-0004](docs/adr/0004-authorization-as-library.md) → [ADR-0007](docs/adr/0007-authz-3.0-generic-library.md)) | v2.x auto-discovered `[RequirePermission]` and synced the catalog at boot. v3.0 deleted that machine: convenience wasn't worth the library holding opinions about consumer code. The four zero-principles are now the contract. |
-| **Consumer-owned catalog** | Permissions arrive exclusively through the consumer's own version-controlled EF migrations (`SeedLumenPermission*` helpers). Reviewable, diffable, environment-reproducible — never mutated at boot. |
-| **Profiles instead of roles** | Role claims freeze at token issue time, so revocation waits for expiry. Profiles are DB-backed groupings resolved per request (cached) — permission changes and revocations take effect immediately, no token re-issue. |
+| **Consumer-owned catalog** | Permissions arrive exclusively through the consumer's own version-controlled EF migrations (`SeedLumenPermission*` helpers). Reviewable, diffable, environment-reproducible; never mutated at boot. |
+| **Profiles instead of roles** | Role claims freeze at token issue time, so revocation waits for expiry. Profiles are DB-backed groupings resolved per request (cached); permission changes and revocations take effect immediately, no token re-issue. |
 | **Multi-provider by migration assembly** ([ADR-0005](docs/adr/0005-multi-provider-database-support.md)) | One core, provider-specific migration packages (SQL Server, PostgreSQL snake_case). `options.Provider` selects the assembly; a hosted service applies migrations on boot (opt-out flag). |
 | **Fail closed, degrade gracefully** | Redis is an optional cache with event-driven invalidation; when it's down, enforcement falls back to the database. Authorization never fails open. |
-| **Backoffice as a Razor Class Library** | The admin console ships *inside* the consumer's process — no separate deploy, mounted at any prefix, protected by the same permission model it manages (public `LumenBackofficePermissions` constants). |
+| **Backoffice as a Razor Class Library** | The admin console ships *inside* the consumer's process, with no separate deploy, mounted at any prefix, protected by the same permission model it manages (public `LumenBackofficePermissions` constants). |
 | **Boundaries enforced by tests** | 12 `NetArchTest` rules fail the build if a `Lumen.Authorization*` assembly touches app code or the core touches ASP.NET Core. The architecture is tested, not documented. |
 
 ---
@@ -233,17 +232,17 @@ Full history in [ADRs](docs/adr/) and [SPEC-0001](docs/spec/0001-lumen-authoriza
 
 This repository is run like a production codebase:
 
-- **[SemVer](https://semver.org/) per package family** — independent release lines tagged
+- **[SemVer](https://semver.org/) per package family:** independent release lines tagged
   `authorization-v*` / `identity-v*`, each with GitHub Releases and a
   [Keep a Changelog](https://keepachangelog.com/) [CHANGELOG](CHANGELOG.md) including full
   **2.x → 3.0 migration guides**.
-- **NuGet Trusted Publishing (OIDC)** — packages are published by tag-triggered GitHub Actions
+- **NuGet Trusted Publishing (OIDC):** packages are published by tag-triggered GitHub Actions
   using short-lived OIDC tokens; no long-lived API keys anywhere.
-- **[Conventional Commits](https://www.conventionalcommits.org/)** — atomic commits through
+- **[Conventional Commits](https://www.conventionalcommits.org/):** atomic commits through
   feature branches and PRs; `main` only moves by merge.
-- **ADRs + SPEC** — every significant decision is recorded in [docs/adr/](docs/adr/); the 3.0
+- **ADRs + SPEC:** every significant decision is recorded in [docs/adr/](docs/adr/); the 3.0
   contract lives in [docs/spec/](docs/spec/).
-- **CI on every push** — full build with `TreatWarningsAsErrors`, unit + architecture suites.
+- **CI on every push:** full build with `TreatWarningsAsErrors`, unit + architecture suites.
 
 ---
 
@@ -269,7 +268,7 @@ This repository is run like a production codebase:
 | Tenant-scoped permissions (`ITenantScopeAccessor`) | ✅ Shipped |
 | Generic 3.0: zero auto-population / enforcement / identity coupling | ✅ Shipped |
 | Mountable backoffice RCL + `LumenBackofficePermissions` | ✅ Shipped |
-| `Lumen.Identity` 1.0 — companion AuthN library | ✅ Shipped |
+| `Lumen.Identity` 1.0, companion AuthN library | ✅ Shipped |
 | First-class minimal-API enforcement (`RequirePermission` endpoint filters) | Planned |
 | MySQL / SQLite migration packages (same pattern as PostgreSQL) | Planned |
 | ASP.NET Core Identity adapter (`IUserDirectory` / `IAuthorizationUserSource` bridge) | Planned |
@@ -281,7 +280,7 @@ This repository is run like a production codebase:
 
 ## Author
 
-**Kauã Vilas Boas** — Backend Engineer (.NET · C#) · builds and publishes production-grade
+**Kauã Vilas Boas,** Backend Engineer (.NET · C#) · builds and publishes production-grade
 .NET libraries with documented architecture, independent release lines and CI/CD to NuGet.
 
 <p>
@@ -299,7 +298,7 @@ This repository is run like a production codebase:
   </a>
 </p>
 
-Based in Brazil (UTC−3) — full overlap with US East Coast and European afternoon working hours.
+Based in Brazil (UTC−3), with full overlap with US East Coast and European afternoon working hours.
 Open to remote opportunities.
 
 ---
