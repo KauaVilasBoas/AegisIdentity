@@ -18,8 +18,8 @@ public sealed class ChangePasswordCommandHandlerTests
     private readonly IPasswordHasher _passwordHasher = Substitute.For<IPasswordHasher>();
     private readonly IPasswordValidator _passwordValidator = Substitute.For<IPasswordValidator>();
     private readonly IRefreshTokenRepository _refreshTokenRepository = Substitute.For<IRefreshTokenRepository>();
-    private readonly IEmailService _emailService = Substitute.For<IEmailService>();
-    private readonly IEmailTemplateRenderer _templateRenderer = Substitute.For<IEmailTemplateRenderer>();
+    private readonly IPasswordChangedNotificationService _passwordChangedNotificationService =
+        Substitute.For<IPasswordChangedNotificationService>();
 
     private ChangePasswordCommandHandler CreateHandler()
         => new(
@@ -27,8 +27,7 @@ public sealed class ChangePasswordCommandHandlerTests
             _passwordHasher,
             _passwordValidator,
             _refreshTokenRepository,
-            _emailService,
-            _templateRenderer,
+            _passwordChangedNotificationService,
             NullLogger<ChangePasswordCommandHandler>.Instance);
 
     [Fact]
@@ -44,9 +43,6 @@ public sealed class ChangePasswordCommandHandlerTests
         _passwordValidator
             .ValidatePasswordAsync(Arg.Any<PasswordValidationContext>(), Arg.Any<CancellationToken>())
             .Returns(PasswordValidationResult.Success);
-        _templateRenderer
-            .Render(Arg.Any<string>(), Arg.Any<IReadOnlyDictionary<string, string>>())
-            .Returns(("<html/>", "text"));
 
         var handler = CreateHandler();
         var result = await handler.Handle(
@@ -57,7 +53,9 @@ public sealed class ChangePasswordCommandHandlerTests
         await _userRepository.Received(1).UpdateAsync(
             Arg.Is<User>(u => u.PasswordHash == "new_hash"),
             Arg.Any<CancellationToken>());
-        await _emailService.Received(1).SendAsync(Arg.Any<EmailMessage>(), Arg.Any<CancellationToken>());
+        await _passwordChangedNotificationService.Received(1).SendPasswordChangedEmailAsync(
+            user,
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -73,9 +71,6 @@ public sealed class ChangePasswordCommandHandlerTests
         _passwordValidator
             .ValidatePasswordAsync(Arg.Any<PasswordValidationContext>(), Arg.Any<CancellationToken>())
             .Returns(PasswordValidationResult.Success);
-        _templateRenderer
-            .Render(Arg.Any<string>(), Arg.Any<IReadOnlyDictionary<string, string>>())
-            .Returns(("<html/>", "text"));
 
         var handler = CreateHandler();
         await handler.Handle(

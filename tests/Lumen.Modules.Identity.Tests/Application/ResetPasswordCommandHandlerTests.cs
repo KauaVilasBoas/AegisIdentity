@@ -20,8 +20,8 @@ public sealed class ResetPasswordCommandHandlerTests
     private readonly IPasswordHasher _passwordHasher = Substitute.For<IPasswordHasher>();
     private readonly IPasswordValidator _passwordValidator = Substitute.For<IPasswordValidator>();
     private readonly IRefreshTokenRepository _refreshTokenRepository = Substitute.For<IRefreshTokenRepository>();
-    private readonly IEmailService _emailService = Substitute.For<IEmailService>();
-    private readonly IEmailTemplateRenderer _templateRenderer = Substitute.For<IEmailTemplateRenderer>();
+    private readonly IPasswordChangedNotificationService _passwordChangedNotificationService =
+        Substitute.For<IPasswordChangedNotificationService>();
 
     private ResetPasswordCommandHandler CreateHandler()
         => new(
@@ -30,8 +30,7 @@ public sealed class ResetPasswordCommandHandlerTests
             _passwordHasher,
             _passwordValidator,
             _refreshTokenRepository,
-            _emailService,
-            _templateRenderer,
+            _passwordChangedNotificationService,
             NullLogger<ResetPasswordCommandHandler>.Instance);
 
     private void SetupValidPassword(string newPassword = "NewStrongPass1!")
@@ -40,9 +39,6 @@ public sealed class ResetPasswordCommandHandlerTests
         _passwordValidator
             .ValidatePasswordAsync(Arg.Any<PasswordValidationContext>(), Arg.Any<CancellationToken>())
             .Returns(PasswordValidationResult.Success);
-        _templateRenderer
-            .Render(Arg.Any<string>(), Arg.Any<IReadOnlyDictionary<string, string>>())
-            .Returns(("<html/>", "text"));
     }
 
     [Fact]
@@ -67,7 +63,9 @@ public sealed class ResetPasswordCommandHandlerTests
         await _userRepository.Received(1).UpdateAsync(
             Arg.Is<User>(u => u.PasswordHash == "new_hashed_password"),
             Arg.Any<CancellationToken>());
-        await _emailService.Received(1).SendAsync(Arg.Any<EmailMessage>(), Arg.Any<CancellationToken>());
+        await _passwordChangedNotificationService.Received(1).SendPasswordChangedEmailAsync(
+            user,
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]
