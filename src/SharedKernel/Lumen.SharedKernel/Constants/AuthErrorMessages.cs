@@ -51,4 +51,6 @@ public static class AuthErrorMessages
     public const string UserRestoreWindowExpired      = "O prazo de {0} dias para restauração expirou.";
     public const string UserNotDeleted                = "Usuário não encontrado no histórico de exclusão.";
     public const string UserAlreadyDeleted            = "Usuário não encontrado.";
+
+    public const string ExpiresAtMustBeInFuture = "ExpiresAt must be in the future.";
 }
