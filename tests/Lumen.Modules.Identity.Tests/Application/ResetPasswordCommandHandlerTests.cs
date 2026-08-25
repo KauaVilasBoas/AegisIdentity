@@ -56,7 +56,6 @@ public sealed class ResetPasswordCommandHandlerTests
 
         _tokenRepository.FindByTokenHashAsync(tokenHash, Arg.Any<CancellationToken>()).Returns(resetToken);
         _userRepository.FindByIdAsync(resetToken.UserId, Arg.Any<CancellationToken>()).Returns(user);
-        _refreshTokenRepository.FindByUserIdAsync(user.Id, Arg.Any<CancellationToken>()).Returns([]);
         SetupValidPassword();
 
         var handler = CreateHandler();
@@ -82,7 +81,6 @@ public sealed class ResetPasswordCommandHandlerTests
 
         _tokenRepository.FindByTokenHashAsync(tokenHash, Arg.Any<CancellationToken>()).Returns(resetToken);
         _userRepository.FindByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(user);
-        _refreshTokenRepository.FindByUserIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns([]);
         SetupValidPassword();
 
         var handler = CreateHandler();
@@ -102,21 +100,15 @@ public sealed class ResetPasswordCommandHandlerTests
         var tokenHash = Sha256Hasher.ComputeHex(rawToken);
         var resetToken = PasswordResetToken.Create(user.Id, tokenHash, DateTime.UtcNow.AddMinutes(30));
 
-        var activeRefreshToken = RefreshToken.Create(
-            user.Id, "refresh_hash", DateTime.UtcNow.AddDays(7), "127.0.0.1");
-
         _tokenRepository.FindByTokenHashAsync(tokenHash, Arg.Any<CancellationToken>()).Returns(resetToken);
         _userRepository.FindByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(user);
-        _refreshTokenRepository
-            .FindByUserIdAsync(user.Id, Arg.Any<CancellationToken>())
-            .Returns([activeRefreshToken]);
         SetupValidPassword();
 
         var handler = CreateHandler();
         await handler.Handle(new ResetPasswordCommand(rawToken, "NewStrongPass1!"), CancellationToken.None);
 
-        await _refreshTokenRepository.Received(1).UpdateAsync(
-            Arg.Is<RefreshToken>(t => t.IsRevoked()),
+        await _refreshTokenRepository.Received(1).RevokeAllActiveByUserIdAsync(
+            user.Id,
             Arg.Any<CancellationToken>());
     }
 

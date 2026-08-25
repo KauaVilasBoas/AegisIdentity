@@ -77,24 +77,13 @@ internal sealed class ChangePasswordCommandHandler
         user.ChangePassword(_passwordHasher.Hash(cmd.NewPassword));
         await _userRepository.UpdateAsync(user, ct);
 
-        await RevokeAllRefreshTokensAsync(user.Id, ct);
+        await _refreshTokenRepository.RevokeAllActiveByUserIdAsync(user.Id, ct);
 
         _logger.LogInformation("Password changed for UserId {UserId}", user.Id);
 
         await SendPasswordChangedEmailAsync(user, ct);
 
         return Unit.Value;
-    }
-
-    private async Task RevokeAllRefreshTokensAsync(Guid userId, CancellationToken ct)
-    {
-        var tokens = await _refreshTokenRepository.FindByUserIdAsync(userId, ct);
-
-        foreach (var token in tokens.Where(t => t.IsActive()))
-        {
-            token.Revoke();
-            await _refreshTokenRepository.UpdateAsync(token, ct);
-        }
     }
 
     private async Task SendPasswordChangedEmailAsync(User user, CancellationToken ct)
