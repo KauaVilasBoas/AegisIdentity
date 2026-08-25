@@ -85,10 +85,10 @@ internal sealed class ListUsersQueryHandler
         var now = DateTime.UtcNow;
         var filtered = stateFilter switch
         {
-            UserStateFilter.Active  => users.Where(u => UserStateResolver.Resolve(u, now) == UserStates.Active).ToList(),
-            UserStateFilter.Locked  => users.Where(u => UserStateResolver.Resolve(u, now) == UserStates.Locked).ToList(),
-            UserStateFilter.Pending => users.Where(u => UserStateResolver.Resolve(u, now) == UserStates.Pending).ToList(),
-            UserStateFilter.Deleted => users.Where(u => UserStateResolver.Resolve(u, now) == UserStates.Deleted).ToList(),
+            UserStateFilter.Active  => users.Where(u => u.ResolveState(now) == UserStates.Active).ToList(),
+            UserStateFilter.Locked  => users.Where(u => u.ResolveState(now) == UserStates.Locked).ToList(),
+            UserStateFilter.Pending => users.Where(u => u.ResolveState(now) == UserStates.Pending).ToList(),
+            UserStateFilter.Deleted => users.Where(u => u.ResolveState(now) == UserStates.Deleted).ToList(),
             _                       => (IReadOnlyList<User>)users,
         };
 
@@ -104,7 +104,7 @@ internal sealed class ListUsersQueryHandler
                 Id: u.Id,
                 Username: u.Username,
                 Email: u.Email,
-                State: UserStateResolver.Resolve(u, now),
+                State: u.ResolveState(now),
                 IsBootstrap: u.IsBootstrap,
                 CreatedAt: u.CreatedAt,
                 LastLoginAt: u.LastLoginAt,
